@@ -1,3 +1,18 @@
+vim.o.cursorline = true
+vim.o.relativenumber = true
+vim.o.tabstop = 2
+vim.o.shiftwidth = 2
+vim.o.expandtab = true
+vim.o.smartindent = true
+vim.opt.list = true
+vim.opt.listchars:append({ space = '·' })
+
+-- Unless you are still migrating, remove the deprecated commands from v1.x
+vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
+
+vim.api.nvim_set_keymap('i', 'jk', '<ESC>', { noremap = true })
+vim.api.nvim_set_keymap('', '<C-d>', '<C-d>zz', { noremap = true })
+vim.api.nvim_set_keymap('', '<C-u>', '<C-u>zz', { noremap = true })
 --[[
 
 =====================================================================
@@ -71,6 +86,24 @@ require('lazy').setup({
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
+    -- A better vim terminal
+  'numToStr/FTerm.nvim',
+
+  -- Add quality of life improvement plugins
+  'vim-airline/vim-airline',
+  'vim-airline/vim-airline-themes',
+  'github/copilot.vim',
+  'embear/vim-uncrustify',
+  -- Neovim tree for an explorer view
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v2.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons',
+      'MunifTanjim/nui.nvim',
+    }
+  },
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -84,7 +117,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
+      { 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -108,7 +141,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',          opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -122,7 +155,8 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
+        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk,
+          { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
         vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
         vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
       end,
@@ -164,7 +198,7 @@ require('lazy').setup({
   },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',         opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
   { 'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -246,6 +280,14 @@ vim.o.completeopt = 'menuone,noselect'
 
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
+-- Enable airline
+-- Enable statusline
+vim.g['airline#extensions#tabline#enabled'] = 1
+vim.g['airline#extensions#tabline#left_sep'] = ' '
+vim.g['airline#extensions#tabline#left_alt_sep'] = '|'
+vim.g['airline#extensions#tabline#formatter'] = 'unique_tail'
+vim.g['airline_powerline_fonts'] = 1
+vim.g['airline_theme'] = 'solarized'
 
 -- [[ Basic Keymaps ]]
 
@@ -267,6 +309,95 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+-- Set Neotree settings
+vim.g.neotree_side = 'left'          -- Position the tree on the left side
+vim.g.neotree_width = 30             -- Set the width of the tree
+vim.g.neotree_auto_open = 1          -- Automatically open Neotree on startup
+vim.g.neotree_auto_close = 1         -- Automatically close Neotree when opening a file
+vim.g.neotree_follow = 1             -- Update the tree automatically when changing buffers
+vim.g.neotree_hide_dotfiles = 1      -- Hide dotfiles in the tree
+vim.g.neotree_highlight_current_file = 1  -- Highlight the current file in the tree
+
+-- Set key mapping to toggle Neotree
+vim.api.nvim_set_keymap('n', '<Leader>n', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+
+-- [[ Configure Neotree's fonts ]]
+require("neo-tree").setup({
+  default_component_configs = {
+    icon = {
+      folder_empty = "󰜌",
+      folder_empty_open = "󰜌",
+    },
+    git_status = {
+      symbols = {
+        renamed   = "󰁕",
+        unstaged  = "󰄱",
+      },
+    },
+  },
+  document_symbols = {
+    kinds = {
+      File = { icon = "󰈙", hl = "Tag" },
+      Namespace = { icon = "󰌗", hl = "Include" },
+      Package = { icon = "󰏖", hl = "Label" },
+      Class = { icon = "󰌗", hl = "Include" },
+      Property = { icon = "󰆧", hl = "@property" },
+      Enum = { icon = "󰒻", hl = "@number" },
+      Function = { icon = "󰊕", hl = "Function" },
+      String = { icon = "󰀬", hl = "String" },
+      Number = { icon = "󰎠", hl = "Number" },
+      Array = { icon = "󰅪", hl = "Type" },
+      Object = { icon = "󰅩", hl = "Type" },
+      Key = { icon = "󰌋", hl = "" },
+      Struct = { icon = "󰌗", hl = "Type" },
+      Operator = { icon = "󰆕", hl = "Operator" },
+      TypeParameter = { icon = "󰊄", hl = "Type" },
+      StaticMethod = { icon = '󰠄 ', hl = 'Function' },
+    }
+  },
+  -- Add this section only if you've configured source selector.
+  source_selector = {
+    sources = {
+      { source = "filesystem", display_name = " 󰉓 Files " },
+      { source = "git_status", display_name = " 󰊢 Git " },
+    },
+  },
+  -- Other options ...
+})
+
+-- [[ Configure FTerm ]]
+require'FTerm'.setup({
+    border = 'double',
+    dimensions  = {
+        height = 0.5,
+        width = 0.8,
+    },
+})
+
+vim.keymap.set('n', '<A-i>', '<CMD>lua require("FTerm").toggle()<CR>')
+vim.keymap.set('t', '<A-i>', '<C-\\><C-n><CMD>lua require("FTerm").toggle()<CR>')
+
+-- require('FTerm').open()
+--
+-- -- or create a vim command
+vim.api.nvim_create_user_command('FTermOpen', require('FTerm').open, { bang = true })
+--
+-- require('FTerm').close()
+--
+-- -- or create a vim command
+vim.api.nvim_create_user_command('FTermClose', require('FTerm').close, { bang = true })
+--
+-- require('FTerm').exit()
+--
+-- -- or create a vim command
+vim.api.nvim_create_user_command('FTermExit', require('FTerm').exit, { bang = true })
+--
+-- require('FTerm').toggle()
+--
+-- -- or create a vim command
+vim.api.nvim_create_user_command('FTermToggle', require('FTerm').toggle, { bang = true })
+
+
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -301,6 +432,7 @@ vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<C-p>', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
