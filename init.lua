@@ -319,7 +319,6 @@ vim.g.neotree_hide_dotfiles = 1      -- Hide dotfiles in the tree
 vim.g.neotree_highlight_current_file = 1  -- Highlight the current file in the tree
 
 -- Set key mapping to toggle Neotree
-vim.api.nvim_set_keymap('n', '<Leader>n', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 
 -- [[ Configure Neotree's fonts ]]
 require("neo-tree").setup({
@@ -365,6 +364,10 @@ require("neo-tree").setup({
   -- Other options ...
 })
 
+vim.keymap.set('n',  '<leader>n', ':Neotree toggle<CR>', { desc = "Toggle Neotredd" })
+
+
+
 -- [[ Configure FTerm ]]
 require'FTerm'.setup({
     border = 'double',
@@ -376,7 +379,6 @@ require'FTerm'.setup({
 
 vim.keymap.set('n', '<A-i>', '<CMD>lua require("FTerm").toggle()<CR>')
 vim.keymap.set('t', '<A-i>', '<C-\\><C-n><CMD>lua require("FTerm").toggle()<CR>')
-
 -- require('FTerm').open()
 --
 -- -- or create a vim command
@@ -396,8 +398,8 @@ vim.api.nvim_create_user_command('FTermExit', require('FTerm').exit, { bang = tr
 --
 -- -- or create a vim command
 vim.api.nvim_create_user_command('FTermToggle', require('FTerm').toggle, { bang = true })
-
-
+vim.keymap.set('n', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
+vim.keymap.set('t', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
