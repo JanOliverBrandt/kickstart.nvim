@@ -1,18 +1,3 @@
-vim.o.cursorline = true
-vim.o.relativenumber = true
-vim.o.tabstop = 2
-vim.o.shiftwidth = 2
-vim.o.expandtab = true
-vim.o.smartindent = true
-vim.opt.list = true
-vim.opt.listchars:append({ space = '·' })
-
--- Unless you are still migrating, remove the deprecated commands from v1.x
-vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
-
-vim.api.nvim_set_keymap('i', 'jk', '<ESC>', { noremap = true })
-vim.api.nvim_set_keymap('', '<C-d>', '<C-d>zz', { noremap = true })
-vim.api.nvim_set_keymap('', '<C-u>', '<C-u>zz', { noremap = true })
 --[[
 
 =====================================================================
@@ -86,13 +71,12 @@ require('lazy').setup({
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
-    -- A better vim terminal
+  -- A better vim terminal
   'numToStr/FTerm.nvim',
 
   -- Add quality of life improvement plugins
   'vim-airline/vim-airline',
   'vim-airline/vim-airline-themes',
-  'github/copilot.vim',
   'embear/vim-uncrustify',
   -- Neovim tree for an explorer view
   {
@@ -102,7 +86,7 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons',
       'MunifTanjim/nui.nvim',
-    }
+    },
   },
 
   -- NOTE: This is where your plugins related to LSP can be installed.
@@ -238,8 +222,98 @@ require('lazy').setup({
   --
   --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
   -- { import = 'custom.plugins' },
+
+  {
+    'kdheepak/lazygit.nvim',
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+  },
+  {
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    opts = {}, -- this is equalent to setup({}) function
+  },
+  {
+    'jose-elias-alvarez/null-ls.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+
+    config = function()
+      local null = require 'null-ls'
+      local augroup = vim.api.nvim_create_augroup('LspFormatting', {})
+      null.setup {
+        sources = {
+          null.builtins.formatting.prettierd,
+          null.builtins.formatting.eslint_d,
+          null.builtins.formatting.stylua,
+          null.builtins.diagnostics.eslint_d,
+        },
+        on_attach = function(client, bufnr)
+          if client.supports_method 'textDocument/formatting' then
+            vim.api.nvim_clear_autocmds { group = augroup, buffer = bufnr }
+            vim.api.nvim_create_autocmd('BufWritePre', {
+              group = augroup,
+              buffer = bufnr,
+              callback = function()
+                -- on 0.8, you should use vim.lsp.buf.format({ bufnr = bufnr }) instead
+                -- on later neovim version, you should use vim.lsp.buf.format({ async = false }) instead
+                vim.lsp.buf.format { async = false }
+              end,
+            })
+          end
+        end,
+      }
+    end,
+  },
+
+  {
+    'kylechui/nvim-surround',
+    version = '*', -- Use for stability; omit to use `main` branch for the latest features
+    event = 'VeryLazy',
+    config = function()
+      require('nvim-surround').setup {
+        -- Configuration here, or leave empty to use defaults
+      }
+    end,
+  },
+
+  {
+    'xiyaowong/transparent.nvim',
+    config = function()
+      require('transparent').setup {
+        groups = { -- table: default groups
+          'Normal',
+          'NormalNC',
+          'Comment',
+          'Constant',
+          'Special',
+          'Identifier',
+          'Statement',
+          'PreProc',
+          'Type',
+          'Underlined',
+          'Todo',
+          'String',
+          'Function',
+          'Conditional',
+          'Repeat',
+          'Operator',
+          'Structure',
+          'LineNr',
+          'NonText',
+          'SignColumn',
+          'CursorLineNr',
+          'EndOfBuffer',
+        },
+        extra_groups = { 'Neotree' },       -- table: additional groups that should be cleared
+        exclude_groups = { 'NormalFloat' }, -- table: groups you don't want to clear
+      }
+    end,
+  },
 }, {})
 
+-- vim.keymap.set('n', '<leader>gg>', 'LazyGit<cr>')
 -- [[ Setting options ]]
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
@@ -310,75 +384,71 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 -- Set Neotree settings
-vim.g.neotree_side = 'left'          -- Position the tree on the left side
-vim.g.neotree_width = 30             -- Set the width of the tree
-vim.g.neotree_auto_open = 1          -- Automatically open Neotree on startup
-vim.g.neotree_auto_close = 1         -- Automatically close Neotree when opening a file
-vim.g.neotree_follow = 1             -- Update the tree automatically when changing buffers
-vim.g.neotree_hide_dotfiles = 1      -- Hide dotfiles in the tree
-vim.g.neotree_highlight_current_file = 1  -- Highlight the current file in the tree
+vim.g.neotree_side = 'left'              -- Position the tree on the left side
+vim.g.neotree_width = 30                 -- Set the width of the tree
+vim.g.neotree_auto_open = 1              -- Automatically open Neotree on startup
+vim.g.neotree_auto_close = 1             -- Automatically close Neotree when opening a file
+vim.g.neotree_follow = 1                 -- Update the tree automatically when changing buffers
+vim.g.neotree_hide_dotfiles = 1          -- Hide dotfiles in the tree
+vim.g.neotree_highlight_current_file = 1 -- Highlight the current file in the tree
 
 -- Set key mapping to toggle Neotree
 
 -- [[ Configure Neotree's fonts ]]
-require("neo-tree").setup({
+require('neo-tree').setup {
   default_component_configs = {
     icon = {
-      folder_empty = "󰜌",
-      folder_empty_open = "󰜌",
+      folder_empty = '󰜌',
+      folder_empty_open = '󰜌',
     },
     git_status = {
       symbols = {
-        renamed   = "󰁕",
-        unstaged  = "󰄱",
+        renamed = '󰁕',
+        unstaged = '󰄱',
       },
     },
   },
   document_symbols = {
     kinds = {
-      File = { icon = "󰈙", hl = "Tag" },
-      Namespace = { icon = "󰌗", hl = "Include" },
-      Package = { icon = "󰏖", hl = "Label" },
-      Class = { icon = "󰌗", hl = "Include" },
-      Property = { icon = "󰆧", hl = "@property" },
-      Enum = { icon = "󰒻", hl = "@number" },
-      Function = { icon = "󰊕", hl = "Function" },
-      String = { icon = "󰀬", hl = "String" },
-      Number = { icon = "󰎠", hl = "Number" },
-      Array = { icon = "󰅪", hl = "Type" },
-      Object = { icon = "󰅩", hl = "Type" },
-      Key = { icon = "󰌋", hl = "" },
-      Struct = { icon = "󰌗", hl = "Type" },
-      Operator = { icon = "󰆕", hl = "Operator" },
-      TypeParameter = { icon = "󰊄", hl = "Type" },
+      File = { icon = '󰈙', hl = 'Tag' },
+      Namespace = { icon = '󰌗', hl = 'Include' },
+      Package = { icon = '󰏖', hl = 'Label' },
+      Class = { icon = '󰌗', hl = 'Include' },
+      Property = { icon = '󰆧', hl = '@property' },
+      Enum = { icon = '󰒻', hl = '@number' },
+      Function = { icon = '󰊕', hl = 'Function' },
+      String = { icon = '󰀬', hl = 'String' },
+      Number = { icon = '󰎠', hl = 'Number' },
+      Array = { icon = '󰅪', hl = 'Type' },
+      Object = { icon = '󰅩', hl = 'Type' },
+      Key = { icon = '󰌋', hl = '' },
+      Struct = { icon = '󰌗', hl = 'Type' },
+      Operator = { icon = '󰆕', hl = 'Operator' },
+      TypeParameter = { icon = '󰊄', hl = 'Type' },
       StaticMethod = { icon = '󰠄 ', hl = 'Function' },
-    }
+    },
   },
   -- Add this section only if you've configured source selector.
   source_selector = {
     sources = {
-      { source = "filesystem", display_name = " 󰉓 Files " },
-      { source = "git_status", display_name = " 󰊢 Git " },
+      { source = 'filesystem', display_name = ' 󰉓 Files ' },
+      { source = 'git_status', display_name = ' 󰊢 Git ' },
     },
   },
   -- Other options ...
-})
-
-vim.keymap.set('n',  '<leader>n', ':Neotree toggle<CR>', { desc = "Toggle Neotredd" })
-
-
+}
 
 -- [[ Configure FTerm ]]
-require'FTerm'.setup({
-    border = 'double',
-    dimensions  = {
-        height = 0.5,
-        width = 0.8,
-    },
-})
+require('FTerm').setup {
+  border = 'double',
+  dimensions = {
+    height = 0.5,
+    width = 0.8,
+  },
+}
 
-vim.keymap.set('n', '<A-i>', '<CMD>lua require("FTerm").toggle()<CR>')
-vim.keymap.set('t', '<A-i>', '<C-\\><C-n><CMD>lua require("FTerm").toggle()<CR>')
+-- vim.keymap.set('n', '<A-i>', '<CMD>lua require("FTerm").toggle()<CR>')
+-- vim.keymap.set('t', '<A-i>', '<C-\\><C-n><CMD>lua require("FTerm").toggle()<CR>')
 -- require('FTerm').open()
 --
 -- -- or create a vim command
@@ -398,8 +468,8 @@ vim.api.nvim_create_user_command('FTermExit', require('FTerm').exit, { bang = tr
 --
 -- -- or create a vim command
 vim.api.nvim_create_user_command('FTermToggle', require('FTerm').toggle, { bang = true })
-vim.keymap.set('n', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
-vim.keymap.set('t', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
+-- vim.keymap.set('n', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
+-- vim.keymap.set('t', '<leader>t', '<CMD>lua require("FTerm").toggle()<CR>')
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -419,7 +489,7 @@ pcall(require('telescope').load_extension, 'fzf')
 
 -- See `:help telescope.builtin`
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
+vim.keymap.set('n', '<leader><space>', require('telescope.builtin').find_files, { desc = '[ ] Find existing files' })
 vim.keymap.set('n', '<leader>/', function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
@@ -549,7 +619,7 @@ local on_attach = function(_, bufnr)
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
-    vim.lsp.buf.format()
+    vim.lsp.buf.format { timeout_ms = 2000 }
   end, { desc = 'Format current buffer with LSP' })
 end
 
@@ -599,7 +669,7 @@ mason_lspconfig.setup_handlers {
       settings = servers[server_name],
       filetypes = (servers[server_name] or {}).filetypes,
     }
-  end
+  end,
 }
 
 -- [[ Configure nvim-cmp ]]
@@ -651,4 +721,6 @@ cmp.setup {
 }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+
+require 'options'
+require 'keymappings'
