@@ -20,6 +20,6 @@ vim.keymap.set('n', '<C-t>', '<CMD>lua require("FTerm").toggle()<CR>')
 vim.keymap.set('t', '<C-t>', '<CMD>lua require("FTerm").toggle()<CR>')
 
 --- Git
-vim.api.nvim_set_keymap('n', '<leader>gg', ':LazyGit<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>lg', ':LazyGit<CR>', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<leader>e', ':Neotree toggle <CR>', { noremap = true })
